@@ -23,9 +23,8 @@ export default function StatusBadge({ status }: StatusBadgeProps) {
       textColor = '#475C47';
       break;
     case 'declined':
-      // A dark, muted neutral charcoal rather than an alarming red
-      bgColor = 'var(--color-cream-dark)';
-      textColor = 'var(--color-ink-soft)';
+      bgColor = 'rgba(154, 76, 69, 0.10)';
+      textColor = 'var(--color-error)';
       break;
   }
 

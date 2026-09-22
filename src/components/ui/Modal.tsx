@@ -33,6 +33,8 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = '50
     return () => window.removeEventListener('keydown', handleEsc);
   }, [isOpen, onClose]);
 
+  const titleId = title ? 'modal-title' : undefined;
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -93,6 +95,9 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = '50
           
           <motion.div
             className="modal-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
             initial={{ opacity: 0, y: 40, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 40, scale: 0.95 }}
@@ -109,7 +114,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = '50
               }}
             >
               {title ? (
-                <h2 style={{ fontFamily: 'var(--font-family-display)', fontWeight: 700, fontSize: '1.125rem', color: 'var(--color-charcoal)', margin: 0 }}>
+                <h2 id={titleId} style={{ fontFamily: 'var(--font-family-display)', fontWeight: 700, fontSize: '1.125rem', color: 'var(--color-charcoal)', margin: 0 }}>
                   {title}
                 </h2>
               ) : <div />}

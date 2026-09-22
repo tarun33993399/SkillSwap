@@ -2,15 +2,11 @@
 // SKILLSWAP — Footer
 // ============================================================
 import { Link } from 'react-router-dom';
-import { Zap, Globe, MessageSquare, AtSign, Video, Mail, MapPin } from 'lucide-react';
+import { Mail, MapPin } from 'lucide-react';
+import { useAuthStore } from '@/store';
+import BrandLogo from './BrandLogo';
 
 const FOOTER_LINKS = {
-  marketplace: [
-    { label: 'Discover Gigs', to: '/discover' },
-    { label: 'Create a Gig', to: '/create-gig' },
-    { label: 'Dashboard', to: '/dashboard' },
-    { label: 'My Bookings', to: '/bookings' },
-  ],
   categories: [
     { label: 'Design & Creative', to: '/discover?category=design' },
     { label: 'Development & Tech', to: '/discover?category=development' },
@@ -19,21 +15,17 @@ const FOOTER_LINKS = {
     { label: 'Video & Animation', to: '/discover?category=video' },
     { label: 'AI Services', to: '/discover?category=ai-services' },
   ],
-  legal: [
-    { label: 'Privacy Policy', to: '/privacy' },
-    { label: 'Terms of Service', to: '/terms' },
-    { label: 'Cookie Policy', to: '/cookies' },
-  ],
 };
 
-const SOCIAL_LINKS = [
-  { icon: MessageSquare, href: '#', label: 'Twitter' },
-  { icon: Globe, href: '#', label: 'LinkedIn' },
-  { icon: AtSign, href: '#', label: 'GitHub' },
-  { icon: Video, href: '#', label: 'Instagram' },
-];
-
 export default function Footer() {
+  const currentUser = useAuthStore((state) => state.currentUser);
+  const creatorLinks = currentUser?.role === 'seller' || currentUser?.role === 'both';
+  const marketplaceLinks = [
+    { label: 'Discover', to: '/discover' },
+    ...(creatorLinks ? [{ label: 'Dashboard', to: '/dashboard' }, { label: 'Create Gig', to: '/create-gig' }] : [{ label: 'My Bookings', to: '/bookings' }]),
+    { label: 'Profile', to: '/profile' },
+  ];
+
   return (
     <footer style={{ backgroundColor: 'var(--color-charcoal)', color: 'var(--color-cream)' }}>
 
@@ -48,41 +40,8 @@ export default function Footer() {
         >
           {/* Brand column */}
           <div style={{ gridColumn: 'span 1' }}>
-            <Link
-              to="/"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                textDecoration: 'none',
-                marginBottom: '1rem',
-              }}
-            >
-              <span
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '8px',
-                  backgroundColor: 'var(--color-accent)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                <Zap size={18} color="var(--color-charcoal)" strokeWidth={2.5} />
-              </span>
-              <span
-                style={{
-                  fontFamily: 'var(--font-family-display)',
-                  fontWeight: 800,
-                  fontSize: '1.25rem',
-                  color: 'var(--color-cream)',
-                  letterSpacing: '-0.02em',
-                }}
-              >
-                SkillSwap
-              </span>
+            <Link to="/" className="brand-link brand-link-footer" style={{ marginBottom: '1rem' }}>
+              <BrandLogo inverted />
             </Link>
 
             <p
@@ -94,13 +53,13 @@ export default function Footer() {
                 marginBottom: '1.5rem',
               }}
             >
-              The creator gig marketplace where skills meet opportunity. Hire talented freelancers or monetise your expertise.
+              Turn your skills into opportunities.
             </p>
 
             {/* Contact */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
               <a
-                href="mailto:hello@skillswap.io"
+                href="mailto:tarunbatshas@gmail.com"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -112,7 +71,7 @@ export default function Footer() {
                 }}
               >
                 <Mail size={14} />
-                hello@skillswap.io
+                tarunbatshas@gmail.com
               </a>
               <span
                 style={{
@@ -124,43 +83,8 @@ export default function Footer() {
                 }}
               >
                 <MapPin size={14} />
-                San Francisco, CA
+                Haridwar, Uttarakhand
               </span>
-            </div>
-
-            {/* Social */}
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
-              {SOCIAL_LINKS.map(({ icon: Icon, href, label }) => (
-                <a
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '8px',
-                    border: '1px solid rgba(247,244,239,0.15)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'rgba(247,244,239,0.65)',
-                    textDecoration: 'none',
-                    transition: 'border-color 0.15s, color 0.15s, background-color 0.15s',
-                  }}
-                  onMouseEnter={(e) => {
-                    const el = e.currentTarget;
-                    el.style.borderColor = 'var(--color-accent)';
-                    el.style.color = 'var(--color-accent)';
-                  }}
-                  onMouseLeave={(e) => {
-                    const el = e.currentTarget;
-                    el.style.borderColor = 'rgba(247,244,239,0.15)';
-                    el.style.color = 'rgba(247,244,239,0.65)';
-                  }}
-                >
-                  <Icon size={15} />
-                </a>
-              ))}
             </div>
           </div>
 
@@ -180,7 +104,7 @@ export default function Footer() {
               Marketplace
             </h4>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {FOOTER_LINKS.marketplace.map((l) => (
+              {marketplaceLinks.map((l) => (
                 <li key={l.to}>
                   <Link
                     to={l.to}
@@ -251,26 +175,9 @@ export default function Footer() {
           }}
         >
           <p style={{ fontSize: '0.8125rem', color: 'rgba(247,244,239,0.4)', margin: 0 }}>
-            © {new Date().getFullYear()} SkillSwap, Inc. All rights reserved.
+            © 2026 SkillSwap. All rights reserved.
           </p>
-          <div style={{ display: 'flex', gap: '1.25rem' }}>
-            {FOOTER_LINKS.legal.map((l) => (
-              <Link
-                key={l.to}
-                to={l.to}
-                style={{
-                  fontSize: '0.8125rem',
-                  color: 'rgba(247,244,239,0.4)',
-                  textDecoration: 'none',
-                  transition: 'color 0.15s',
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = 'rgba(247,244,239,0.7)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(247,244,239,0.4)'; }}
-              >
-                {l.label}
-              </Link>
-            ))}
-          </div>
+          <span style={{ fontSize: '0.8125rem', color: 'rgba(247,244,239,0.4)' }}>Built for creators and clients.</span>
         </div>
       </div>
     </footer>

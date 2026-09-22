@@ -40,7 +40,7 @@ export default function GigCard({ gig, showBook = true }: GigCardProps) {
       >
         <div
           style={{
-            height: '200px',
+            aspectRatio: '16 / 10',
             backgroundColor: 'var(--color-cream-dark)',
             overflow: 'hidden',
           }}
@@ -49,21 +49,19 @@ export default function GigCard({ gig, showBook = true }: GigCardProps) {
             <img
               src={heroImage}
               alt={gig.title}
+              className="gig-card-image"
               style={{
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
-                transition: 'transform 0.35s ease',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.04)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
             />
           ) : (
             <div
               style={{
                 width: '100%',
                 height: '100%',
-                background: 'linear-gradient(135deg, var(--color-accent-light) 0%, var(--color-cream-dark) 100%)',
+                background: 'var(--color-cream-dark)',
               }}
             />
           )}

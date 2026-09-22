@@ -151,6 +151,26 @@ export interface Notification {
   createdAt: string;
 }
 
+export type AppNotificationType =
+  | 'booking_request'
+  | 'booking_accepted'
+  | 'booking_declined'
+  | 'gig_published'
+  | 'gig_updated'
+  | 'profile_updated'
+  | 'system';
+
+export interface AppNotification {
+  id: string;
+  userId: string;
+  type: AppNotificationType;
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+  relatedId?: string;
+}
+
 // ── Pagination / API shapes ───────────────────────────────────
 // These mirror what a real REST response would return,
 // so swapping localStorage → fetch() only touches lib/api.ts

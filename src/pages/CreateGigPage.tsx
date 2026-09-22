@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
 import { GigsAPI } from '@/lib/api';
-import { useAuthStore, useGigStore, useUIStore } from '@/store';
+import { useAuthStore, useGigStore, useUIStore, useNotificationStore } from '@/store';
 import { CATEGORIES } from '@/data/seed';
 import { slugify } from '@/lib/utils';
 import EmptyState from '@/components/ui/EmptyState';
@@ -24,6 +24,7 @@ export default function CreateGigPage() {
   const { currentUser } = useAuthStore();
   const addGig = useGigStore((state) => state.addGig);
   const addToast = useUIStore((state) => state.addToast);
+  const addNotification = useNotificationStore((state) => state.add);
 
   if (!currentUser || currentUser.role === 'buyer') {
     return <div className="container-xl section-pad"><EmptyState title="Creators only" message="This page is for sellers. Browse our marketplace to discover talented creators." actionLabel="Explore Gigs" onAction={() => navigate('/discover')} /></div>;
@@ -57,6 +58,7 @@ export default function CreateGigPage() {
     }
 
     addGig(result.data);
+    addNotification({ userId: currentUser.id, type: 'gig_published', title: 'Service published', message: `${result.data.title} is now live.`, relatedId: result.data.id });
     addToast({ type: 'success', title: 'Your service has been published.' });
     navigate(`/gig/${result.data.id}`);
   };

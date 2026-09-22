@@ -86,7 +86,7 @@ const TESTIMONIALS = [
 // ── Client logos (placeholders) ───────────────────────────────
 const CLIENT_LOGOS = [
   { name: 'Horizon', style: { fontWeight: 800, letterSpacing: '-0.04em', fontSize: '1.25rem' } },
-  { name: 'PJX', style: { fontWeight: 900, fontSize: '1.5rem', letterSpacing: '0.05em' } },
+  { name: 'SkillSwap', style: { fontWeight: 900, fontSize: '1.5rem', letterSpacing: '0.05em' } },
   { name: 'Fieldstone', style: { fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.02em' } },
   { name: 'Kobi & Mike', style: { fontWeight: 600, fontSize: '0.95rem' } },
   { name: 'Nova Labs', style: { fontWeight: 800, letterSpacing: '-0.03em', fontSize: '1.2rem' } },

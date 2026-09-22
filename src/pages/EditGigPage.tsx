@@ -1,7 +1,7 @@
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { GigsAPI } from '@/lib/api';
-import { useAuthStore, useGigStore, useUIStore } from '@/store';
+import { useAuthStore, useGigStore, useUIStore, useNotificationStore } from '@/store';
 import { CATEGORIES } from '@/data/seed';
 import { slugify } from '@/lib/utils';
 import EmptyState from '@/components/ui/EmptyState';
@@ -26,6 +26,7 @@ export default function EditGigPage() {
   const gigs = useGigStore((state) => state.gigs);
   const updateGig = useGigStore((state) => state.updateGig);
   const addToast = useUIStore((state) => state.addToast);
+  const addNotification = useNotificationStore((state) => state.add);
   if (gigs.length === 0) return <div className="container-xl section-pad"><div style={{ minHeight: '360px' }} /></div>;
 
   const gig = gigs.find((item) => item.id === id);
@@ -55,6 +56,7 @@ export default function EditGigPage() {
     }
 
     updateGig(result.data);
+    addNotification({ userId: currentUser.id, type: 'gig_updated', title: 'Service updated', message: `${result.data.title} was updated successfully.`, relatedId: result.data.id });
     addToast({ type: 'success', title: 'Your service has been updated.' });
     navigate(`/gig/${gig.id}`);
   };

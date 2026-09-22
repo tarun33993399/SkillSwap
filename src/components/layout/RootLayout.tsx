@@ -36,23 +36,24 @@ export default function RootLayout() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               style={{
-                backgroundColor: 'var(--color-charcoal)',
+                backgroundColor: 'var(--color-surface)',
+                border: '1px solid var(--color-border)',
                 color: 'var(--color-cream)',
-                padding: '1rem 1.25rem',
-                borderRadius: '8px',
-                boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                padding: '0.9rem 1rem',
+                borderRadius: 'var(--radius-card)',
+                boxShadow: 'var(--shadow-card-hover)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.75rem',
                 pointerEvents: 'auto',
-                minWidth: '280px',
+                minWidth: 'min(280px, calc(100vw - 2rem))',
               }}
               onClick={() => removeToast(toast.id)}
             >
-              {toast.type === 'success' && <span style={{ color: '#22c55e' }}>✓</span>}
+              <span style={{ color: toast.type === 'success' ? 'var(--color-success)' : 'var(--color-accent-hover)', fontSize: '1.1rem' }}>{toast.type === 'success' ? '✓' : '!'}</span>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{toast.title}</span>
-                {toast.message && <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>{toast.message}</span>}
+                <span style={{ color: 'var(--color-charcoal)', fontWeight: 700, fontSize: '0.875rem' }}>{toast.title}</span>
+                {toast.message && <span style={{ color: 'var(--color-ink-soft)', fontSize: '0.75rem' }}>{toast.message}</span>}
               </div>
             </motion.div>
           ))}

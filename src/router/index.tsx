@@ -10,8 +10,8 @@ import DashboardPage from '@/pages/DashboardPage';
 import BookingsPage from '@/pages/BookingsPage';
 import CreateGigPage from '@/pages/CreateGigPage';
 import EditGigPage from '@/pages/EditGigPage';
+import ProfilePage from '@/pages/ProfilePage';
 import {
-  ProfilePage,
   AuthPage,
   NotFoundPage,
 } from '@/pages/Placeholders';

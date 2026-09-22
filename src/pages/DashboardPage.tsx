@@ -21,7 +21,7 @@ import {
 
 import type { Booking } from '@/types';
 import { GigsAPI } from '@/lib/api'; 
-import { useAuthStore, useBookingStore, useUIStore, useGigStore } from '@/store';
+import { useAuthStore, useBookingStore, useUIStore, useGigStore, useNotificationStore } from '@/store';
 import { formatDate, formatPrice } from '@/lib/utils';
 import { CATEGORIES } from '@/data/seed';
 
@@ -34,6 +34,7 @@ export default function DashboardPage() {
   const { currentUser, isAuthenticated } = useAuthStore();
   const { forCreator, updateStatus } = useBookingStore();
   const { addToast } = useUIStore();
+  const addNotification = useNotificationStore((state) => state.add);
   const { gigs: allGigs, updateGig } = useGigStore();
 
   const [isLoading, setIsLoading] = useState(true);
@@ -69,12 +70,29 @@ export default function DashboardPage() {
     if (gigRes.ok) {
       updateGig(gigRes.data);
     }
+    addNotification({
+      userId: booking.clientId,
+      type: 'booking_accepted',
+      title: 'Booking accepted',
+      message: `Your booking for ${gigRes.ok ? gigRes.data.title : 'the service'} was accepted by the creator.`,
+      relatedId: booking.gigId,
+    });
     
     addToast({ type: 'success', title: 'Booking accepted successfully.' });
   };
 
-  const handleDecline = (bookingId: string) => {
+  const handleDecline = (booking: Booking) => {
+    const bookingId = booking.id;
     updateStatus(bookingId, 'declined');
+    if (booking) {
+      addNotification({
+        userId: booking.clientId,
+        type: 'booking_declined',
+        title: 'Booking update',
+        message: 'The creator is not available for this request.',
+        relatedId: booking.gigId,
+      });
+    }
     addToast({ type: 'success', title: 'Booking declined.' });
   };
 
@@ -261,7 +279,7 @@ export default function DashboardPage() {
                           </button>
                           <button
                             className="btn-ghost"
-                            onClick={() => handleDecline(booking.id)}
+                            onClick={() => handleDecline(booking)}
                             style={{ padding: '0.625rem 1.25rem', color: 'var(--color-ink-soft)', fontSize: '0.875rem' }}
                           >
                             <X size={16} /> Decline

@@ -14,4 +14,9 @@ export default defineConfig({
       '@': path.resolve(import.meta.dirname, './src'),
     },
   },
+  server: {
+    watch: {
+      ignored: ['**/public/Downloads/**'],
+    },
+  },
 })

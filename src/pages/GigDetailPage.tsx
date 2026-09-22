@@ -21,7 +21,7 @@ import type { User } from '@/types';
 import { UsersAPI } from '@/lib/api';
 import { formatPrice } from '@/lib/utils';
 import { CATEGORIES } from '@/data/seed';
-import { useAuthStore, useBookingStore, useUIStore, useGigStore } from '@/store';
+import { useAuthStore, useBookingStore, useUIStore, useGigStore, useNotificationStore } from '@/store';
 
 import EmptyState from '@/components/ui/EmptyState';
 import Modal from '@/components/ui/Modal';
@@ -67,6 +67,7 @@ export default function GigDetailPage() {
   const { currentUser } = useAuthStore();
   const { add: addBooking, forClient } = useBookingStore();
   const { addToast } = useUIStore();
+  const addNotification = useNotificationStore((state) => state.add);
 
   // Read gigs directly from gigStore — reactive to status changes (unavailable)
   const allGigs = useGigStore((s) => s.gigs);
@@ -159,7 +160,7 @@ export default function GigDetailPage() {
 
     setIsSubmitting(true);
     submitTimerRef.current = setTimeout(() => {
-      addBooking({
+      const booking = addBooking({
         gigId: gig.id,
         creatorId: creator.id,
         clientId: currentUser?.id || 'guest',
@@ -169,6 +170,13 @@ export default function GigDetailPage() {
         deadline: formData.deadline || undefined,
         rate: gig.packages[0]?.price || 0,
         status: 'pending'
+      });
+      addNotification({
+        userId: creator.id,
+        type: 'booking_request',
+        title: 'New booking request',
+        message: `${formData.clientName} requested your service, ${gig.title}.`,
+        relatedId: booking.id,
       });
       
       setIsSubmitting(false);
@@ -316,7 +324,7 @@ export default function GigDetailPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-ink-muted)', fontSize: '0.8125rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.02em', marginBottom: '0.5rem' }}>
                   <Calendar size={16} /> Availability
                 </div>
-                <div style={{ fontSize: '1rem', fontWeight: 600, color: isUnavailable ? 'var(--color-ink-soft)' : '#16a34a' }}>
+                <div style={{ fontSize: '1rem', fontWeight: 600, color: isUnavailable ? 'var(--color-ink-soft)' : 'var(--color-accent-hover)' }}>
                   {isUnavailable ? 'Unavailable' : 'Taking Bookings'}
                 </div>
               </div>
@@ -411,7 +419,7 @@ export default function GigDetailPage() {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9375rem', color: 'var(--color-ink-soft)' }}>
                   <span>Status</span>
-                  <span style={{ fontWeight: 700, color: isUnavailable ? 'var(--color-ink-muted)' : '#16a34a' }}>
+                  <span style={{ fontWeight: 700, color: isUnavailable ? 'var(--color-ink-muted)' : 'var(--color-accent-hover)' }}>
                     {isUnavailable ? 'Unavailable' : 'Available'}
                   </span>
                 </div>
@@ -496,7 +504,7 @@ export default function GigDetailPage() {
 
             {/* DUPLICATE PENDING CHECK */}
             {hasDuplicatePending && !isUnavailable && (
-              <div style={{ backgroundColor: 'rgba(232, 160, 32, 0.1)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(232, 160, 32, 0.3)', display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+              <div style={{ backgroundColor: 'var(--color-accent-light)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-accent-muted)', display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
                 <AlertCircle size={16} style={{ color: 'var(--color-accent-hover)', flexShrink: 0, marginTop: '0.125rem' }} />
                 <p style={{ fontSize: '0.8125rem', color: 'var(--color-charcoal)', margin: 0, lineHeight: 1.5 }}>
                   You already have a pending request for this service.
@@ -507,24 +515,24 @@ export default function GigDetailPage() {
             {!isUnavailable && !hasDuplicatePending && (
               <>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-charcoal)', marginBottom: '0.375rem' }}>Full Name <span style={{ color: 'red' }}>*</span></label>
-                  <input className="input" value={formData.clientName} onChange={e => setFormData({ ...formData, clientName: e.target.value })} onBlur={() => handleValidation()} style={{ borderColor: formErrors.clientName ? 'red' : undefined }} />
-                  {formErrors.clientName && <span style={{ fontSize: '0.75rem', color: 'red', marginTop: '0.25rem', display: 'block' }}>{formErrors.clientName}</span>}
+                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-charcoal)', marginBottom: '0.375rem' }}>Full Name <span style={{ color: 'var(--color-accent-hover)' }}>*</span></label>
+                  <input className="input" value={formData.clientName} onChange={e => setFormData({ ...formData, clientName: e.target.value })} onBlur={() => handleValidation()} style={{ borderColor: formErrors.clientName ? 'var(--color-accent-hover)' : undefined }} />
+                  {formErrors.clientName && <span style={{ fontSize: '0.75rem', color: 'var(--color-accent-hover)', marginTop: '0.25rem', display: 'block' }}>{formErrors.clientName}</span>}
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-charcoal)', marginBottom: '0.375rem' }}>Email <span style={{ color: 'red' }}>*</span></label>
-                  <input className="input" type="email" value={formData.clientEmail} onChange={e => setFormData({ ...formData, clientEmail: e.target.value })} onBlur={() => handleValidation()} style={{ borderColor: formErrors.clientEmail ? 'red' : undefined }} />
-                  {formErrors.clientEmail && <span style={{ fontSize: '0.75rem', color: 'red', marginTop: '0.25rem', display: 'block' }}>{formErrors.clientEmail}</span>}
+                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-charcoal)', marginBottom: '0.375rem' }}>Email <span style={{ color: 'var(--color-accent-hover)' }}>*</span></label>
+                  <input className="input" type="email" value={formData.clientEmail} onChange={e => setFormData({ ...formData, clientEmail: e.target.value })} onBlur={() => handleValidation()} style={{ borderColor: formErrors.clientEmail ? 'var(--color-accent-hover)' : undefined }} />
+                  {formErrors.clientEmail && <span style={{ fontSize: '0.75rem', color: 'var(--color-accent-hover)', marginTop: '0.25rem', display: 'block' }}>{formErrors.clientEmail}</span>}
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-charcoal)', marginBottom: '0.375rem' }}>Project Requirements <span style={{ color: 'red' }}>*</span></label>
-                  <textarea className="input" rows={4} placeholder="Tell the creator what you need, your goals, preferred style, references, or important details..." value={formData.requirements} onChange={e => setFormData({ ...formData, requirements: e.target.value })} onBlur={() => handleValidation()} style={{ borderColor: formErrors.requirements ? 'red' : undefined, resize: 'vertical' }} />
-                  {formErrors.requirements && <span style={{ fontSize: '0.75rem', color: 'red', marginTop: '0.25rem', display: 'block' }}>{formErrors.requirements}</span>}
+                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-charcoal)', marginBottom: '0.375rem' }}>Project Requirements <span style={{ color: 'var(--color-accent-hover)' }}>*</span></label>
+                  <textarea className="input" rows={4} placeholder="Tell the creator what you need, your goals, preferred style, references, or important details..." value={formData.requirements} onChange={e => setFormData({ ...formData, requirements: e.target.value })} onBlur={() => handleValidation()} style={{ borderColor: formErrors.requirements ? 'var(--color-accent-hover)' : undefined, resize: 'vertical' }} />
+                  {formErrors.requirements && <span style={{ fontSize: '0.75rem', color: 'var(--color-accent-hover)', marginTop: '0.25rem', display: 'block' }}>{formErrors.requirements}</span>}
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-charcoal)', marginBottom: '0.375rem' }}>Deadline (Optional)</label>
                   <input className="input" type="date" value={formData.deadline} onChange={e => setFormData({ ...formData, deadline: e.target.value })} onBlur={() => handleValidation()} style={{ borderColor: formErrors.deadline ? 'red' : undefined }} />
-                  {formErrors.deadline && <span style={{ fontSize: '0.75rem', color: 'red', marginTop: '0.25rem', display: 'block' }}>{formErrors.deadline}</span>}
+                  {formErrors.deadline && <span style={{ fontSize: '0.75rem', color: 'var(--color-accent-hover)', marginTop: '0.25rem', display: 'block' }}>{formErrors.deadline}</span>}
                 </div>
 
                 <div style={{ marginTop: '0.5rem', paddingTop: '1.25rem', borderTop: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -543,7 +551,7 @@ export default function GigDetailPage() {
         ) : (
           <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ padding: '1rem 0 1rem' }}>
             <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'rgba(34,197,94,0.1)', color: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'var(--color-accent-light)', color: 'var(--color-accent-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
                 <CheckCircle2 size={32} />
               </div>
               <h2 style={{ fontFamily: 'var(--font-family-display)', fontSize: '1.5rem', fontWeight: 800, color: 'var(--color-charcoal)', marginBottom: '0.5rem' }}>

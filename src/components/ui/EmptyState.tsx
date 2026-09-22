@@ -27,19 +27,20 @@ export default function EmptyState({
         textAlign: 'center',
         backgroundColor: 'var(--color-surface)',
         borderRadius: 'var(--radius-card)',
-        border: '1.5px dashed var(--color-border)',
+        border: '1px solid var(--color-border)',
+        boxShadow: 'var(--shadow-card)',
       }}
     >
       <div
         style={{
           width: '64px',
           height: '64px',
-          borderRadius: '50%',
-          backgroundColor: 'var(--color-cream-dark)',
+          borderRadius: 'var(--radius-card)',
+          backgroundColor: 'var(--color-accent-light)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: 'var(--color-ink-muted)',
+          color: 'var(--color-accent-hover)',
           marginBottom: '1.5rem',
         }}
       >
