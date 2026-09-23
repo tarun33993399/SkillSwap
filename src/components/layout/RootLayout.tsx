@@ -1,17 +1,33 @@
-import { Outlet } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Outlet, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence, MotionConfig, useReducedMotion } from 'framer-motion';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import ScrollToTop from './ScrollToTop';
 import { useUIStore } from '@/store';
 
 export default function RootLayout() {
   const { toasts, removeToast } = useUIStore();
+  const location = useLocation();
+  const prefersReducedMotion = useReducedMotion();
+  const routeKey = `${location.pathname}${location.search}${location.hash}`;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <MotionConfig reducedMotion="user">
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <ScrollToTop />
       <Navbar />
       <main style={{ flex: 1 }}>
-        <Outlet />
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={routeKey}
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={prefersReducedMotion ? undefined : { opacity: 0, y: -4 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.24, ease: 'easeOut' }}
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
       </main>
       <Footer />
 
@@ -32,9 +48,10 @@ export default function RootLayout() {
           {toasts.map(toast => (
             <motion.div
               key={toast.id}
-              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              initial={{ opacity: 0, y: 12, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
               style={{
                 backgroundColor: 'var(--color-surface)',
                 border: '1px solid var(--color-border)',
@@ -59,7 +76,8 @@ export default function RootLayout() {
           ))}
         </AnimatePresence>
       </div>
-    </div>
+      </div>
+    </MotionConfig>
   );
 }
 

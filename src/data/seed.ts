@@ -3,7 +3,7 @@
 // ============================================================
 
 import type { User, Gig, Category, Booking } from '@/types';
-import { storageSet, storageGet } from '@/lib/storage';
+import { storageSet, storageGet, storageClear } from '@/lib/storage';
 
 const SEED_VERSION = 'v2_realistic';
 
@@ -255,7 +255,7 @@ export function seedDatabase() {
   
   // If version mismatch or missing, clear everything and re-seed
   if (currentVersion !== SEED_VERSION) {
-    localStorage.clear();
+    storageClear();
     storageSet('seed_version', SEED_VERSION);
     storageSet('users', MOCK_USERS);
     storageSet('gigs', MOCK_GIGS);

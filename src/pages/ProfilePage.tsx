@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Briefcase, CalendarDays, CheckCircle2, Edit3, Mail, UserRound } from 'lucide-react';
 
 import { useAuthStore, useBookingStore, useGigStore, useUIStore } from '@/store';
@@ -7,6 +7,7 @@ import { formatPrice } from '@/lib/utils';
 import EmptyState from '@/components/ui/EmptyState';
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
   const { currentUser, isAuthenticated, updateProfile } = useAuthStore();
   const gigs = useGigStore((state) => state.gigs);
   const bookings = useBookingStore((state) => state.bookings);
@@ -17,7 +18,7 @@ export default function ProfilePage() {
   const [error, setError] = useState('');
 
   if (!isAuthenticated || !currentUser) {
-    return <div className="container-xl section-pad"><EmptyState title="Sign in to view your profile" message="Your profile and booking activity will appear here after you sign in." actionLabel="Go to Sign In" onAction={() => { window.location.href = '/auth'; }} /></div>;
+    return <div className="container-xl section-pad"><EmptyState title="Sign in to view your profile" message="Your profile and booking activity will appear here after you sign in." actionLabel="Go to Sign In" onAction={() => navigate('/auth')} /></div>;
   }
 
   const creatorProfile = currentUser.role === 'seller' || currentUser.role === 'both';
@@ -81,7 +82,7 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        {creatorProfile && <section><div style={{ marginBottom: '1.25rem' }}><h2 style={{ fontFamily: 'var(--font-family-display)', fontSize: '1.5rem', color: 'var(--color-charcoal)' }}>My Services</h2><p style={{ color: 'var(--color-ink-soft)', fontSize: '0.9rem', marginTop: '0.25rem' }}>Services you currently offer on SkillSwap.</p></div>{myGigs.length === 0 ? <EmptyState title="No services yet" message="Create your first service to start receiving project requests." actionLabel="Create a Gig" onAction={() => { window.location.href = '/create-gig'; }} /> : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '1rem' }}>{myGigs.map((gig) => <Link key={gig.id} to={`/gig/${gig.id}`} className="card" style={{ padding: '1rem', textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}><div style={{ height: '130px', borderRadius: '8px', overflow: 'hidden', backgroundColor: 'var(--color-cream-dark)' }}>{gig.images[0] && <img src={gig.images[0]} alt={gig.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}</div><h3 style={{ fontFamily: 'var(--font-family-display)', fontSize: '1rem', color: 'var(--color-charcoal)' }}>{gig.title}</h3><div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-ink-soft)', fontSize: '0.8125rem' }}><span>{formatPrice(gig.packages[0]?.price || 0)}</span><span>{gig.status === 'unavailable' ? 'Unavailable' : 'Active'}</span></div><span style={{ color: 'var(--color-accent-hover)', fontSize: '0.8125rem', fontWeight: 700 }}>View service</span></Link>)}</div>}</section>}
+        {creatorProfile && <section><div style={{ marginBottom: '1.25rem' }}><h2 style={{ fontFamily: 'var(--font-family-display)', fontSize: '1.5rem', color: 'var(--color-charcoal)' }}>My Services</h2><p style={{ color: 'var(--color-ink-soft)', fontSize: '0.9rem', marginTop: '0.25rem' }}>Services you currently offer on SkillSwap.</p></div>{myGigs.length === 0 ? <EmptyState title="No services yet" message="Create your first service to start receiving project requests." actionLabel="Create a Gig" onAction={() => navigate('/create-gig')} /> : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '1rem' }}>{myGigs.map((gig) => <Link key={gig.id} to={`/gig/${gig.id}`} className="card" style={{ padding: '1rem', textDecoration: 'none', color: 'inherit', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}><div style={{ height: '130px', borderRadius: '8px', overflow: 'hidden', backgroundColor: 'var(--color-cream-dark)' }}>{gig.images[0] && <img src={gig.images[0]} alt={gig.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}</div><h3 style={{ fontFamily: 'var(--font-family-display)', fontSize: '1rem', color: 'var(--color-charcoal)' }}>{gig.title}</h3><div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--color-ink-soft)', fontSize: '0.8125rem' }}><span>{formatPrice(gig.packages[0]?.price || 0)}</span><span>{gig.status === 'unavailable' ? 'Unavailable' : 'Active'}</span></div><span style={{ color: 'var(--color-accent-hover)', fontSize: '0.8125rem', fontWeight: 700 }}>View service</span></Link>)}</div>}</section>}
       </div>
     </div>
   );

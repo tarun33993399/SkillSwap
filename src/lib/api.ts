@@ -75,9 +75,8 @@ export const UsersAPI = {
     return { ok: true, data: user };
   },
 
-  create(user: Omit<User, 'id'>): ApiResult<User> {
-    const newUser: User = { ...user, id: generateId('usr') };
-    return collectionInsert<User>(USERS, newUser);
+  create(user: User): ApiResult<User> {
+    return collectionInsert<User>(USERS, user);
   },
 
   update(id: string, patch: Partial<User>): ApiResult<User> {

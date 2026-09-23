@@ -17,7 +17,7 @@ interface BookingState {
 
   // Actions
   load: () => void;
-  add: (data: Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>) => Booking;
+  add: (data: Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>) => Booking | null;
   updateStatus: (id: string, status: BookingStatus) => void;
 
   // Selectors (memoised slices — call in components)
@@ -41,7 +41,8 @@ export const useBookingStore = create<BookingState>((set, get) => ({
       createdAt: now,
       updatedAt: now,
     };
-    collectionInsert<Booking>(COLLECTION, booking);
+    const result = collectionInsert<Booking>(COLLECTION, booking);
+    if (!result.ok) return null;
     set((s) => ({ bookings: [...s.bookings, booking] }));
     return booking;
   },

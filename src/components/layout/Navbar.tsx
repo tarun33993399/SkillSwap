@@ -2,7 +2,7 @@
 // SKILLSWAP — Navbar
 // ============================================================
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, LogOut, User as UserIcon, Bell, CheckCheck } from 'lucide-react';
 import { useAuthStore, useNotificationStore, useUIStore } from '@/store';
@@ -45,6 +45,7 @@ export default function Navbar() {
   const { currentUser, isAuthenticated, logout } = useAuthStore();
   const { mobileNavOpen, toggleMobileNav, closeMobileNav } = useUIStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const drawerRef = useRef<HTMLDivElement>(null);
   const allNotifications = useNotificationStore((state) => state.notifications);
   const markRead = useNotificationStore((state) => state.markRead);
@@ -65,6 +66,11 @@ export default function Navbar() {
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, [closeMobileNav]);
+
+  useEffect(() => {
+    closeMobileNav();
+    setNotificationsOpen(false);
+  }, [location.pathname, location.search, closeMobileNav]);
 
   function handleLogout() {
     logout();
@@ -97,8 +103,6 @@ export default function Navbar() {
           top: 0,
           zIndex: 50,
           backgroundColor: 'rgba(247,244,239,0.94)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
           borderBottom: '1px solid var(--color-border)',
         }}
       >
@@ -144,7 +148,7 @@ export default function Navbar() {
                     <Bell size={18} />
                     {unreadCount > 0 && <span aria-label={`${unreadCount} unread notifications`} style={{ position: 'absolute', top: '-4px', right: '-4px', minWidth: '18px', height: '18px', padding: '0 4px', borderRadius: '999px', backgroundColor: 'var(--color-accent)', color: 'var(--color-charcoal)', fontSize: '0.65rem', fontWeight: 800, display: 'grid', placeItems: 'center' }}>{unreadCount > 9 ? '9+' : unreadCount}</span>}
                   </button>
-                  {notificationsOpen && <NotificationPanel notifications={notifications} onSelect={openNotification} onMarkAll={() => currentUser && markAllRead(currentUser.id)} />}
+                  <AnimatePresence initial={false}>{notificationsOpen && <NotificationPanel notifications={notifications} onSelect={openNotification} onMarkAll={() => currentUser && markAllRead(currentUser.id)} />}</AnimatePresence>
                 </div>
                 <Link
                   to="/profile"
@@ -323,7 +327,7 @@ export default function Navbar() {
                 {isAuthenticated ? (
                   <>
                     <button type="button" aria-label={`Notifications${unreadCount ? `, ${unreadCount} unread` : ''}`} aria-expanded={notificationsOpen} onClick={() => setNotificationsOpen((open) => !open)} className="btn-ghost" style={{ width: '100%', justifyContent: 'center', position: 'relative' }}><Bell size={17} /> Notifications{unreadCount > 0 && <span style={{ backgroundColor: 'var(--color-accent)', color: 'var(--color-charcoal)', borderRadius: '999px', padding: '0.1rem 0.4rem', fontSize: '0.7rem' }}>{unreadCount}</span>}</button>
-                    {notificationsOpen && <NotificationPanel notifications={notifications} onSelect={openNotification} onMarkAll={() => currentUser && markAllRead(currentUser.id)} mobile />}
+                    <AnimatePresence initial={false}>{notificationsOpen && <NotificationPanel notifications={notifications} onSelect={openNotification} onMarkAll={() => currentUser && markAllRead(currentUser.id)} mobile />}</AnimatePresence>
                     <Link
                       to="/profile"
                       onClick={closeMobileNav}
@@ -383,10 +387,10 @@ export default function Navbar() {
 
 function NotificationPanel({ notifications, onSelect, onMarkAll, mobile = false }: { notifications: AppNotification[]; onSelect: (notification: AppNotification) => void; onMarkAll: () => void; mobile?: boolean }) {
   const unreadCount = notifications.filter((item) => !item.read).length;
-  return <div className="notification-panel" role="dialog" aria-label="Notifications" style={{ position: mobile ? 'static' : 'absolute', top: 'calc(100% + 0.75rem)', right: 0, width: mobile ? '100%' : 'min(360px, calc(100vw - 2rem))', maxHeight: 'min(420px, calc(100vh - 110px))', overflowY: 'auto', zIndex: 70, backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-card)', boxShadow: 'var(--shadow-card-hover)', padding: '1rem' }}>
+  return <motion.div className="notification-panel" role="dialog" aria-label="Notifications" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.16, ease: 'easeOut' }} style={{ position: mobile ? 'static' : 'absolute', top: 'calc(100% + 0.75rem)', right: 0, width: mobile ? '100%' : 'min(360px, calc(100vw - 2rem))', maxHeight: 'min(420px, calc(100vh - 110px))', overflowY: 'auto', zIndex: 70, backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-card)', boxShadow: 'var(--shadow-card-hover)', padding: '1rem' }}>
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '0.75rem' }}><div><h2 style={{ fontFamily: 'var(--font-family-display)', fontSize: '1rem', color: 'var(--color-charcoal)' }}>Notifications</h2>{unreadCount > 0 && <span style={{ color: 'var(--color-ink-muted)', fontSize: '0.75rem' }}>{unreadCount} unread</span>}</div>{unreadCount > 0 && <button type="button" onClick={onMarkAll} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', border: 0, background: 'none', color: 'var(--color-accent-hover)', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700 }}><CheckCheck size={14} /> Mark all as read</button>}</div>
     {notifications.length === 0 ? <p style={{ color: 'var(--color-ink-soft)', fontSize: '0.875rem', lineHeight: 1.5, margin: '1rem 0 0.5rem' }}>You&apos;re all caught up.</p> : <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>{notifications.slice(0, 20).map((notification) => <button key={notification.id} type="button" onClick={() => onSelect(notification)} style={{ width: '100%', textAlign: 'left', border: 0, borderRadius: '8px', backgroundColor: notification.read ? 'transparent' : 'var(--color-accent-light)', padding: '0.75rem', cursor: 'pointer' }}><span style={{ display: 'block', color: 'var(--color-charcoal)', fontSize: '0.8125rem', fontWeight: notification.read ? 600 : 800 }}>{notification.title}</span><span style={{ display: 'block', color: 'var(--color-ink-soft)', fontSize: '0.78rem', lineHeight: 1.4, marginTop: '0.2rem' }}>{notification.message}</span><span style={{ display: 'block', color: 'var(--color-ink-muted)', fontSize: '0.68rem', marginTop: '0.35rem' }}>{formatNotificationDate(notification.createdAt)}</span></button>)}</div>}
-  </div>;
+  </motion.div>;
 }
 
 function formatNotificationDate(iso: string) {

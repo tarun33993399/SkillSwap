@@ -1,9 +1,9 @@
 // ============================================================
 // SKILLSWAP — Discover Page (Marketplace)
 // ============================================================
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Search } from 'lucide-react';
 
 import { UsersAPI } from '@/lib/api';
@@ -32,12 +32,21 @@ export default function DiscoverPage() {
   const [searchInput, setSearchInput] = useState(initialQuery);
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [isLoading, setIsLoading] = useState(true);
+  const prefersReducedMotion = useReducedMotion();
+  const syncingFromUrl = useRef(false);
 
   // Subscribe to gigStore — reactive: new gigs from Create Gig appear instantly
   const allGigs = useGigStore((s) => s.gigs);
 
   // Debounce search input by 250ms
   const debouncedSearch = useDebounce(searchInput, 250);
+
+  // Keep URL-driven navigation in sync while this page stays mounted.
+  useEffect(() => {
+    syncingFromUrl.current = true;
+    setSearchInput(searchParams.get('q') || '');
+    setActiveCategory(searchParams.get('category') || 'all');
+  }, [searchParams]);
 
   // Show skeleton on initial mount for ~500ms to mimic load feel
   useEffect(() => {
@@ -47,11 +56,17 @@ export default function DiscoverPage() {
 
   // Sync URL params when state changes (debounced search + category)
   useEffect(() => {
+    if (syncingFromUrl.current) {
+      syncingFromUrl.current = false;
+      return;
+    }
     const params = new URLSearchParams();
     if (debouncedSearch) params.set('q', debouncedSearch);
     if (activeCategory !== 'all') params.set('category', activeCategory);
-    setSearchParams(params, { replace: true });
-  }, [debouncedSearch, activeCategory, setSearchParams]);
+    if (params.toString() !== searchParams.toString()) {
+      setSearchParams(params, { replace: true });
+    }
+  }, [debouncedSearch, activeCategory, searchParams, setSearchParams]);
 
   // Derived filtered & sorted gigs
   const filteredGigs = useMemo(() => {
@@ -196,19 +211,19 @@ export default function DiscoverPage() {
             layout
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))',
               gap: '1.25rem',
             }}
           >
             <AnimatePresence>
-              {filteredGigs.map(gig => (
+              {filteredGigs.map((gig, index) => (
                 <motion.div
                   key={gig.id}
                   layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.25, ease: 'easeInOut' }}
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={prefersReducedMotion ? undefined : { opacity: 0, y: -4 }}
+                  transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.25, ease: 'easeOut', delay: index * 0.035 }}
                 >
                   <GigCard gig={gig} showBook />
                 </motion.div>

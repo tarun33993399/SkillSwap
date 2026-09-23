@@ -182,7 +182,7 @@ export default function GigForm({ mode, initialGig, creatorName, onSubmit }: Gig
 
   return (
     <div className="gig-form-layout">
-      <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <form className="gig-form" onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         <Field label="Service Title" required error={errors.title}>
           <input className="input" aria-label="Service Title" placeholder="e.g. Premium YouTube Thumbnail Design" value={values.title} maxLength={100} onChange={(event) => update('title', event.target.value)} style={inputStyle(errors.title)} />
           <span style={{ color: 'var(--color-ink-muted)', fontSize: '0.75rem', textAlign: 'right' }}>{values.title.length}/100</span>
@@ -212,7 +212,7 @@ export default function GigForm({ mode, initialGig, creatorName, onSubmit }: Gig
         <section style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }} aria-labelledby="packages-heading">
           <div style={{ marginBottom: '1rem' }}><h2 id="packages-heading" style={{ fontFamily: 'var(--font-family-display)', fontSize: '1.2rem', color: 'var(--color-charcoal)' }}>Packages</h2><p style={{ color: 'var(--color-ink-soft)', fontSize: '0.875rem', marginTop: '0.25rem' }}>Offer clear options while keeping your Basic package as the starting price.</p></div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {values.packages.map((item, index) => <details key={item.tier} open={item.enabled} style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-card)', backgroundColor: 'var(--color-surface)' }}>
+            {values.packages.map((item, index) => <details className="gig-package" key={item.tier} open={item.enabled} style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-card)', backgroundColor: 'var(--color-surface)' }}>
               <summary style={{ cursor: 'pointer', listStyle: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.125rem', fontWeight: 700, color: 'var(--color-charcoal)' }}><span style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}><input type="checkbox" aria-label={`Enable ${tierLabels[item.tier]} package`} checked={item.enabled} disabled={index === 0} onChange={(event) => { event.preventDefault(); updatePackage(index, { enabled: event.target.checked }); }} onClick={(event) => event.stopPropagation()} />{tierLabels[item.tier]} package</span><ChevronDown size={17} /></summary>
               {item.enabled && <div style={{ padding: '0 1.125rem 1.125rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div className="gig-form-two-column"><Field label="Package Title"><input className="input" aria-label={`${tierLabels[item.tier]} package title`} value={item.title} onChange={(event) => updatePackage(index, { title: event.target.value })} /></Field><Field label="Package Price"><div style={{ position: 'relative' }}><span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', fontWeight: 800, color: 'var(--color-ink-soft)' }}>₹</span><input className="input" aria-label={`${tierLabels[item.tier]} package price`} type="number" min="1" value={item.price} onChange={(event) => { updatePackage(index, { price: event.target.value }); if (index === 0) update('price', event.target.value); }} style={{ paddingLeft: '2.25rem' }} /></div></Field></div>

@@ -1,7 +1,7 @@
 // ============================================================
 // SKILLSWAP — Modal Component
 // ============================================================
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
@@ -15,13 +15,21 @@ interface ModalProps {
 
 export default function Modal({ isOpen, onClose, title, children, maxWidth = '500px' }: ModalProps) {
   // Prevent body scroll when open
+  const previousOverflow = useRef<string | null>(null);
   useEffect(() => {
     if (isOpen) {
+      previousOverflow.current = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
+    } else if (previousOverflow.current !== null) {
+      document.body.style.overflow = previousOverflow.current;
+      previousOverflow.current = null;
     }
-    return () => { document.body.style.overflow = 'unset'; };
+    return () => {
+      if (previousOverflow.current !== null) {
+        document.body.style.overflow = previousOverflow.current;
+        previousOverflow.current = null;
+      }
+    };
   }, [isOpen]);
 
   // Handle escape key
@@ -48,6 +56,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = '50
             alignItems: 'center',
             justifyContent: 'center',
             padding: '1rem',
+            pointerEvents: isOpen ? 'auto' : 'none',
           }}
         >
           {/* Backdrop */}
@@ -98,10 +107,10 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = '50
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            initial={{ opacity: 0, y: 40, scale: 0.95 }}
+            initial={{ opacity: 0, y: 24, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 40, scale: 0.95 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            exit={{ opacity: 0, y: 24, scale: 0.98 }}
+            transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
           >
             {/* Header */}
             <div

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CalendarClock, ArrowRight, Clock3, ExternalLink, UserRound } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
 import type { Booking } from '@/types';
 import { UsersAPI } from '@/lib/api';
@@ -22,8 +22,9 @@ const filters: { label: string; value: BookingFilter }[] = [
   { label: 'Declined', value: 'declined' },
 ];
 
-function BookingCard({ booking, onViewDetails }: { booking: Booking; onViewDetails: (requirements: string) => void }) {
+function BookingCard({ booking, onViewDetails, delay = 0 }: { booking: Booking; onViewDetails: (requirements: string) => void; delay?: number }) {
   const navigate = useNavigate();
+  const prefersReducedMotion = useReducedMotion();
   const gig = useGigStore((state) => state.gigs.find((item) => item.id === booking.gigId) ?? null);
   const creatorResult = UsersAPI.getById(booking.creatorId);
   const creator = creatorResult.ok ? creatorResult.data : null;
@@ -36,9 +37,10 @@ function BookingCard({ booking, onViewDetails }: { booking: Booking; onViewDetai
   return (
     <motion.article
       layout
-      initial={{ opacity: 0, y: 12 }}
+      initial={prefersReducedMotion ? false : { opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 12 }}
+      exit={prefersReducedMotion ? undefined : { opacity: 0, y: 12 }}
+      transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.28, ease: 'easeOut', delay }}
       className="card"
       style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}
     >
@@ -91,10 +93,13 @@ function BookingCard({ booking, onViewDetails }: { booking: Booking; onViewDetai
 export default function BookingsPage() {
   const { currentUser, isAuthenticated } = useAuthStore();
   const { forClient } = useBookingStore();
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState<BookingFilter>('all');
   const [selectedRequirements, setSelectedRequirements] = useState<string | null>(null);
 
-  if (!isAuthenticated || !currentUser) return null;
+  if (!isAuthenticated || !currentUser) {
+    return <div className="container-xl section-pad"><EmptyState title="Sign in to view your bookings" message="Your booking requests and updates will appear here after you sign in." actionLabel="Go to Sign In" onAction={() => navigate('/auth')} /></div>;
+  }
 
   const bookings = forClient(currentUser.id);
   const visibleBookings = activeFilter === 'all' ? bookings : bookings.filter((booking) => booking.status === activeFilter);
@@ -109,12 +114,12 @@ export default function BookingsPage() {
       {bookings.length > 0 && <div role="group" aria-label="Filter bookings" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem', marginBottom: '2rem' }}>{filters.map((filter) => <button key={filter.value} type="button" aria-pressed={activeFilter === filter.value} onClick={() => setActiveFilter(filter.value)} style={{ border: `1px solid ${activeFilter === filter.value ? 'var(--color-accent)' : 'var(--color-border)'}`, backgroundColor: activeFilter === filter.value ? 'var(--color-accent-light)' : 'var(--color-surface)', color: activeFilter === filter.value ? 'var(--color-accent-hover)' : 'var(--color-ink-soft)', borderRadius: 'var(--radius-pill)', padding: '0.55rem 1rem', fontWeight: 700, cursor: 'pointer' }}>{filter.label}</button>)}</div>}
 
       {bookings.length === 0 ? (
-        <EmptyState title="You haven&apos;t booked a creator yet." message="Explore services from talented creators and find the right person for your project." actionLabel="Explore Gigs" onAction={() => { window.location.href = '/discover'; }} />
+        <EmptyState title="You haven&apos;t booked a creator yet." message="Explore services from talented creators and find the right person for your project." actionLabel="Explore Gigs" onAction={() => navigate('/discover')} />
       ) : visibleBookings.length === 0 ? (
         <EmptyState title={`No ${activeFilter} bookings`} message="Try another status filter to see more of your project requests." />
       ) : (
         <motion.div layout style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '1.25rem' }}>
-          <AnimatePresence mode="popLayout">{[...visibleBookings].reverse().map((booking) => <BookingCard key={booking.id} booking={booking} onViewDetails={setSelectedRequirements} />)}</AnimatePresence>
+          <AnimatePresence mode="popLayout">{[...visibleBookings].reverse().map((booking, index) => <BookingCard key={booking.id} booking={booking} delay={index * 0.04} onViewDetails={setSelectedRequirements} />)}</AnimatePresence>
         </motion.div>
       )}
 

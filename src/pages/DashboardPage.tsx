@@ -48,7 +48,12 @@ export default function DashboardPage() {
     setIsLoading(false);
   }, [currentUser, isAuthenticated, navigate]);
 
-  if (!currentUser || currentUser.role === 'buyer') return null;
+  if (!isAuthenticated || !currentUser) {
+    return <div className="container-xl section-pad"><EmptyState title="Sign in to view your dashboard" message="Creator tools and booking requests are available after you sign in." actionLabel="Go to Sign In" onAction={() => navigate('/auth')} /></div>;
+  }
+  if (currentUser.role === 'buyer') {
+    return <div className="container-xl section-pad"><EmptyState title="Creators only" message="The dashboard is for managing services and booking requests." actionLabel="Explore Gigs" onAction={() => navigate('/discover')} /></div>;
+  }
 
   // Filter gigs to only this creator's
   const creatorGigs = allGigs.filter(g => g.sellerId === currentUser.id);
@@ -62,22 +67,38 @@ export default function DashboardPage() {
 
   // ── Actions ──
   const handleAccept = (booking: Booking) => {
-    // 1. Mark booking as accepted
-    updateStatus(booking.id, 'accepted');
-    
-    // 2. Mark gig as unavailable
-    const gigRes = GigsAPI.update(booking.gigId, { status: 'unavailable' });
-    if (gigRes.ok) {
-      updateGig(gigRes.data);
+    const gig = allGigs.find((item) => item.id === booking.gigId);
+    const competingPending = bookings.filter((item) => item.gigId === booking.gigId && item.status === 'pending' && item.id !== booking.id);
+    if (!gig || gig.status === 'unavailable' || bookings.some((item) => item.gigId === booking.gigId && item.status === 'accepted')) {
+      addToast({ type: 'error', title: 'This service is no longer available.' });
+      return;
     }
+
+    const gigRes = GigsAPI.update(booking.gigId, { status: 'unavailable' });
+    if (!gigRes.ok) {
+      addToast({ type: 'error', title: 'Unable to update service availability.', message: gigRes.error.message });
+      return;
+    }
+
+    updateGig(gigRes.data);
+    updateStatus(booking.id, 'accepted');
+    competingPending.forEach((pendingBooking) => {
+      updateStatus(pendingBooking.id, 'declined');
+      addNotification({
+        userId: pendingBooking.clientId,
+        type: 'booking_declined',
+        title: 'Booking update',
+        message: 'This service was booked by another client.',
+        relatedId: pendingBooking.gigId,
+      });
+    });
     addNotification({
       userId: booking.clientId,
       type: 'booking_accepted',
       title: 'Booking accepted',
-      message: `Your booking for ${gigRes.ok ? gigRes.data.title : 'the service'} was accepted by the creator.`,
+      message: `Your booking for ${gigRes.data.title} was accepted by the creator.`,
       relatedId: booking.gigId,
     });
-    
     addToast({ type: 'success', title: 'Booking accepted successfully.' });
   };
 

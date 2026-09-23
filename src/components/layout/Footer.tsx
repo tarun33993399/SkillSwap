@@ -13,7 +13,7 @@ const FOOTER_LINKS = {
     { label: 'Writing & Translation', to: '/discover?category=writing' },
     { label: 'Digital Marketing', to: '/discover?category=marketing' },
     { label: 'Video & Animation', to: '/discover?category=video' },
-    { label: 'AI Services', to: '/discover?category=ai-services' },
+    { label: 'AI Services', to: '/discover?category=ai' },
   ],
 };
 
@@ -30,8 +30,9 @@ export default function Footer() {
     <footer style={{ backgroundColor: 'var(--color-charcoal)', color: 'var(--color-cream)' }}>
 
       {/* ── Main grid ─────────────────────────────────────────── */}
-      <div className="container-xl" style={{ paddingTop: '5rem', paddingBottom: '3rem' }}>
+      <div className="container-xl footer-shell" style={{ paddingTop: '5rem', paddingBottom: '3rem' }}>
         <div
+          className="footer-grid"
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -39,7 +40,7 @@ export default function Footer() {
           }}
         >
           {/* Brand column */}
-          <div style={{ gridColumn: 'span 1' }}>
+          <div className="footer-column footer-brand-column" style={{ gridColumn: 'span 1' }}>
             <Link to="/" className="brand-link brand-link-footer" style={{ marginBottom: '1rem' }}>
               <BrandLogo inverted />
             </Link>
@@ -89,7 +90,7 @@ export default function Footer() {
           </div>
 
           {/* Marketplace links */}
-          <div>
+          <div className="footer-column">
             <h4
               style={{
                 fontFamily: 'var(--font-family-display)',
@@ -108,6 +109,7 @@ export default function Footer() {
                 <li key={l.to}>
                   <Link
                     to={l.to}
+                    className="footer-nav-link"
                     style={{
                       fontSize: '0.875rem',
                       color: 'rgba(247,244,239,0.65)',
@@ -125,7 +127,7 @@ export default function Footer() {
           </div>
 
           {/* Categories */}
-          <div>
+          <div className="footer-column">
             <h4
               style={{
                 fontFamily: 'var(--font-family-display)',
@@ -144,6 +146,7 @@ export default function Footer() {
                 <li key={l.to}>
                   <Link
                     to={l.to}
+                    className="footer-nav-link"
                     style={{
                       fontSize: '0.875rem',
                       color: 'rgba(247,244,239,0.65)',
@@ -163,6 +166,7 @@ export default function Footer() {
 
         {/* ── Bottom bar ─────────────────────────────────────── */}
         <div
+          className="footer-bottom"
           style={{
             marginTop: '3rem',
             paddingTop: '1.5rem',

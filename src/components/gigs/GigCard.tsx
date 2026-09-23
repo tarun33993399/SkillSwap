@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Star, Clock, ArrowRight, CalendarPlus } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import type { Gig, User } from '@/types';
 import { formatPrice, formatCount } from '@/lib/utils';
 import { UsersAPI } from '@/lib/api';
@@ -17,25 +17,27 @@ function getSeller(id: string): User | undefined {
 }
 
 export default function GigCard({ gig, showBook = true }: GigCardProps) {
+  const prefersReducedMotion = useReducedMotion();
   const seller = getSeller(gig.sellerId);
   const basePrice = gig.packages[0]?.price ?? 0;
   const heroImage = gig.images[0];
 
   return (
     <motion.div
-      className="card"
+      className="card gig-card"
       style={{
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
         height: '100%',
       }}
-      whileHover={{ y: -4, boxShadow: 'var(--shadow-card-hover)' }}
+      whileHover={prefersReducedMotion ? undefined : { y: -1, boxShadow: 'var(--shadow-card-hover)' }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
     >
       {/* ── Hero image ──────────────────────────────────────── */}
       <Link
         to={`/gig/${gig.id}`}
+        className="gig-card-media"
         style={{ display: 'block', position: 'relative', flexShrink: 0 }}
       >
         <div
@@ -267,6 +269,7 @@ export default function GigCard({ gig, showBook = true }: GigCardProps) {
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <Link
               to={`/gig/${gig.id}`}
+              className="gig-card-action gig-card-action-secondary"
               style={{
                 flex: 1,
                 display: 'flex',
@@ -296,6 +299,7 @@ export default function GigCard({ gig, showBook = true }: GigCardProps) {
             </Link>
             {gig.status === 'unavailable' ? (
               <div
+                className="gig-card-action gig-card-action-unavailable"
                 style={{
                   flex: 1,
                   display: 'flex',
@@ -317,6 +321,7 @@ export default function GigCard({ gig, showBook = true }: GigCardProps) {
             ) : (
               <Link
                 to={`/gig/${gig.id}?action=book`}
+                className="gig-card-action gig-card-action-primary"
                 style={{
                   flex: 1,
                   display: 'flex',

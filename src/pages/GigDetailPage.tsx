@@ -89,9 +89,9 @@ export default function GigDetailPage() {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const clientBookings = forClient(currentUser?.id || 'guest');
-  // Duplicate Protection: same client + same gig + same creator + pending
-  const hasDuplicatePending = clientBookings.some(
-    b => b.gigId === id && b.creatorId === gig?.sellerId && b.status === 'pending'
+  // Prevent repeat requests after a pending or accepted booking.
+  const hasExistingBooking = clientBookings.some(
+    b => b.gigId === id && b.creatorId === gig?.sellerId && (b.status === 'pending' || b.status === 'accepted')
   );
 
   // Load creator data when gig resolves in the store
@@ -154,7 +154,7 @@ export default function GigDetailPage() {
       return; // Will be handled by the UI showing the unavailable state
     }
     
-    if (hasDuplicatePending) {
+    if (hasExistingBooking) {
       return;
     }
 
@@ -171,6 +171,12 @@ export default function GigDetailPage() {
         rate: gig.packages[0]?.price || 0,
         status: 'pending'
       });
+      if (!booking) {
+        setIsSubmitting(false);
+        addToast({ type: 'error', title: 'Unable to send booking request.', message: 'Please try again.' });
+        submitTimerRef.current = null;
+        return;
+      }
       addNotification({
         userId: creator.id,
         type: 'booking_request',
@@ -294,7 +300,7 @@ export default function GigDetailPage() {
             <CreatorMiniProfile creator={creator} />
           </motion.div>
 
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.5 }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.12, duration: 0.38 }}>
             {/* Hero Image */}
             <div style={{ borderRadius: 'var(--radius-card)', overflow: 'hidden', marginTop: '2.5rem', marginBottom: '3rem', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-cream-dark)' }}>
               {gig.images[0] && (
@@ -503,35 +509,35 @@ export default function GigDetailPage() {
             )}
 
             {/* DUPLICATE PENDING CHECK */}
-            {hasDuplicatePending && !isUnavailable && (
+            {hasExistingBooking && !isUnavailable && (
               <div style={{ backgroundColor: 'var(--color-accent-light)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--color-accent-muted)', display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
                 <AlertCircle size={16} style={{ color: 'var(--color-accent-hover)', flexShrink: 0, marginTop: '0.125rem' }} />
                 <p style={{ fontSize: '0.8125rem', color: 'var(--color-charcoal)', margin: 0, lineHeight: 1.5 }}>
-                  You already have a pending request for this service.
+                  You already have a pending or accepted booking for this service.
                 </p>
               </div>
             )}
 
-            {!isUnavailable && !hasDuplicatePending && (
+            {!isUnavailable && !hasExistingBooking && (
               <>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-charcoal)', marginBottom: '0.375rem' }}>Full Name <span style={{ color: 'var(--color-accent-hover)' }}>*</span></label>
-                  <input className="input" value={formData.clientName} onChange={e => setFormData({ ...formData, clientName: e.target.value })} onBlur={() => handleValidation()} style={{ borderColor: formErrors.clientName ? 'var(--color-accent-hover)' : undefined }} />
+                  <label htmlFor="booking-client-name" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-charcoal)', marginBottom: '0.375rem' }}>Full Name <span style={{ color: 'var(--color-accent-hover)' }}>*</span></label>
+                  <input id="booking-client-name" className="input" value={formData.clientName} onChange={e => setFormData({ ...formData, clientName: e.target.value })} onBlur={() => handleValidation()} style={{ borderColor: formErrors.clientName ? 'var(--color-accent-hover)' : undefined }} />
                   {formErrors.clientName && <span style={{ fontSize: '0.75rem', color: 'var(--color-accent-hover)', marginTop: '0.25rem', display: 'block' }}>{formErrors.clientName}</span>}
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-charcoal)', marginBottom: '0.375rem' }}>Email <span style={{ color: 'var(--color-accent-hover)' }}>*</span></label>
-                  <input className="input" type="email" value={formData.clientEmail} onChange={e => setFormData({ ...formData, clientEmail: e.target.value })} onBlur={() => handleValidation()} style={{ borderColor: formErrors.clientEmail ? 'var(--color-accent-hover)' : undefined }} />
+                  <label htmlFor="booking-client-email" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-charcoal)', marginBottom: '0.375rem' }}>Email <span style={{ color: 'var(--color-accent-hover)' }}>*</span></label>
+                  <input id="booking-client-email" className="input" type="email" value={formData.clientEmail} onChange={e => setFormData({ ...formData, clientEmail: e.target.value })} onBlur={() => handleValidation()} style={{ borderColor: formErrors.clientEmail ? 'var(--color-accent-hover)' : undefined }} />
                   {formErrors.clientEmail && <span style={{ fontSize: '0.75rem', color: 'var(--color-accent-hover)', marginTop: '0.25rem', display: 'block' }}>{formErrors.clientEmail}</span>}
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-charcoal)', marginBottom: '0.375rem' }}>Project Requirements <span style={{ color: 'var(--color-accent-hover)' }}>*</span></label>
-                  <textarea className="input" rows={4} placeholder="Tell the creator what you need, your goals, preferred style, references, or important details..." value={formData.requirements} onChange={e => setFormData({ ...formData, requirements: e.target.value })} onBlur={() => handleValidation()} style={{ borderColor: formErrors.requirements ? 'var(--color-accent-hover)' : undefined, resize: 'vertical' }} />
+                  <label htmlFor="booking-requirements" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-charcoal)', marginBottom: '0.375rem' }}>Project Requirements <span style={{ color: 'var(--color-accent-hover)' }}>*</span></label>
+                  <textarea id="booking-requirements" className="input" rows={4} placeholder="Tell the creator what you need, your goals, preferred style, references, or important details..." value={formData.requirements} onChange={e => setFormData({ ...formData, requirements: e.target.value })} onBlur={() => handleValidation()} style={{ borderColor: formErrors.requirements ? 'var(--color-accent-hover)' : undefined, resize: 'vertical' }} />
                   {formErrors.requirements && <span style={{ fontSize: '0.75rem', color: 'var(--color-accent-hover)', marginTop: '0.25rem', display: 'block' }}>{formErrors.requirements}</span>}
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-charcoal)', marginBottom: '0.375rem' }}>Deadline (Optional)</label>
-                  <input className="input" type="date" value={formData.deadline} onChange={e => setFormData({ ...formData, deadline: e.target.value })} onBlur={() => handleValidation()} style={{ borderColor: formErrors.deadline ? 'red' : undefined }} />
+                  <label htmlFor="booking-deadline" style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-charcoal)', marginBottom: '0.375rem' }}>Deadline (Optional)</label>
+                  <input id="booking-deadline" className="input" type="date" value={formData.deadline} onChange={e => setFormData({ ...formData, deadline: e.target.value })} onBlur={() => handleValidation()} style={{ borderColor: formErrors.deadline ? 'red' : undefined }} />
                   {formErrors.deadline && <span style={{ fontSize: '0.75rem', color: 'var(--color-accent-hover)', marginTop: '0.25rem', display: 'block' }}>{formErrors.deadline}</span>}
                 </div>
 

@@ -182,14 +182,14 @@ export default function HomePage() {
           <motion.div
             initial={{ opacity: 0, y: 32 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             style={{ maxWidth: '720px' }}
           >
             {/* Badge */}
             <motion.div
               initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
+              transition={{ duration: 0.35, delay: 0.08 }}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -242,7 +242,7 @@ export default function HomePage() {
               onSubmit={handleSearch}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.25 }}
+              transition={{ duration: 0.35, delay: 0.18 }}
               style={{
                 display: 'flex',
                 gap: '0.5rem',
@@ -296,7 +296,7 @@ export default function HomePage() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.4, duration: 0.4 }}
+              transition={{ delay: 0.28, duration: 0.3 }}
               style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}
             >
               <Link to="/discover" className="btn-primary">
@@ -311,7 +311,7 @@ export default function HomePage() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.55, duration: 0.5 }}
+              transition={{ delay: 0.36, duration: 0.35 }}
               style={{
                 display: 'flex',
                 flexWrap: 'wrap',

@@ -4,7 +4,7 @@
 import { create } from 'zustand';
 import type { User } from '@/types';
 import { AuthAPI, UsersAPI } from '@/lib/api';
-import { generateId } from '@/lib/storage';
+import { generateId, storageGet } from '@/lib/storage';
 
 interface AuthState {
   currentUser: User | null;
@@ -39,8 +39,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   async login(email, _password) {
     // In localStorage mode we just find the user by email.
     // A real backend would POST /auth/login and get a JWT.
-    const { storageGet } = await import('@/lib/storage');
-    const users = storageGet<User[]>('skillswap_users') ?? [];
+    const users = storageGet<User[]>('users') ?? [];
     const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
     if (!user) {
       return { ok: false, error: 'No account found with that email.' };
@@ -51,10 +50,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   async register({ name, email, role }) {
+    const users = storageGet<User[]>('users') ?? [];
+    if (users.some((user) => user.email.toLowerCase() === email.trim().toLowerCase())) {
+      return { ok: false, error: 'An account with that email already exists.' };
+    }
     const newUser: User = {
       id: generateId('usr'),
       name,
-      email,
+      email: email.trim().toLowerCase(),
       role,
       isVerified: false,
       memberSince: new Date().toISOString(),

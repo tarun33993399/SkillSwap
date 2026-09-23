@@ -27,8 +27,6 @@ export default function EditGigPage() {
   const updateGig = useGigStore((state) => state.updateGig);
   const addToast = useUIStore((state) => state.addToast);
   const addNotification = useNotificationStore((state) => state.add);
-  if (gigs.length === 0) return <div className="container-xl section-pad"><div style={{ minHeight: '360px' }} /></div>;
-
   const gig = gigs.find((item) => item.id === id);
   if (!gig) {
     return <div className="container-xl section-pad"><EmptyState title="Service Not Found" message="This service could not be found or may have been removed." actionLabel="Back to Dashboard" onAction={() => navigate('/dashboard')} /></div>;
